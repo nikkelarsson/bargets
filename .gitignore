@@ -1,0 +1,16 @@
+# Compiled Python modules
+*.pyc
+
+# Virtual environment
+venv/
+
+# Setuptools distribution folder
+dist/
+
+# Man-pages
+docs/*.1
+
+# Python egg metadata
+*.egg-info/
+*.egg
+*__pycache__/
