@@ -9,6 +9,14 @@ Where does the name, "bargets", come from? [Bar] Wid[gets].
 pip install bargets
 ```
 
+# Usage
+To use any of the widgets in a statusbar, see the list of commands below.
+
+| Widget       | Command         |
+| -----------: | :-------------- |
+| CPU          | bargets-cpu     |
+| Battery      | bargets-battery |
+
 # Requirements
 | Requirement  | Note          |
 | -----------: | :------------ |
