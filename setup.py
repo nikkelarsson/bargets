@@ -76,7 +76,10 @@ setup(
     #install_requires=[],  # Optional
 
     # Need to install, for example, man-pages that your project has?
-    #data_files=[("man/man1", ["docs/bargets.1"])],  # Optional
+    data_files=[  # Optional
+        ("bin", ["bin/bargets-battery"]),
+        ("bin", ["bin/bargets-cpu"]),
+    ],
 
     # Any executable scripts?
     # For example, the following would provide a command
@@ -84,8 +87,8 @@ setup(
     # file 'main' from package 'bargets', when invoked:
     entry_points={  # Optional
         "console_scripts": [
-            "bargets-cpu=bargets.cpu:main",
-            "bargets-battery=bargets.battery:main",
+            # "bargets-cpu=bargets.cpu:main",
+            # "bargets-battery=bargets.battery:main",
         ]
     },
 
