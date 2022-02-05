@@ -98,6 +98,6 @@ setup(
     # Additional URLs that are relevant to your project
     project_urls={  # Optional
         #"Bug Reports": "https://github.com...",
-        #"Source": "https://github.com..."
+        "Source": "https://github.com/nikkelarsson/bargets"
     }
 )
