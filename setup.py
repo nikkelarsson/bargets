@@ -76,10 +76,7 @@ setup(
     #install_requires=[],  # Optional
 
     # Need to install, for example, man-pages that your project has?
-    data_files=[  # Optional
-        # ("bin", ["bin/bargets-battery"]),
-        # ("bin", ["bin/bargets-cpu"]),
-    ],
+    # data_files=[("man/man1", ["docs/bargets.1"])],  # Optional
 
     # Any executable scripts?
     # For example, the following would provide a command
