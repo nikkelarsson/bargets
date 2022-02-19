@@ -4,7 +4,6 @@ __program__: str = "bargets-cpu"
 __author__: str = "Niklas Larsson"
 __credits__: list = ["Niklas Larsson"]
 __license__: str = "MIT"
-__version__: str = "0.1.0a0"
 __maintainer__: str = "Niklas Larsson"
 __status__: str = "Alpha"
 
