@@ -25,6 +25,11 @@ exec = $HOME/.local/bin/bargets-battery
 interval = 5
 ```
 
+# Configuration: bargets.yaml
+If you wish, you can configure each widget how you like in **bargets.yaml**.
+First, you need to create a file called **bargets.yaml** to ~/.config/bargets.
+You can copy example configuration from [here](examples).
+
 # Widgets
 | Widget       | Command          |
 | -----------: | :--------------- |
@@ -36,3 +41,7 @@ interval = 5
 | -----------: | :------------ |
 | Python       | 3.8 or higher |
 | OS           | MacOS, Linux  |
+
+# Todo
+- [ ] Add tests
+- [ ] Add command line options
