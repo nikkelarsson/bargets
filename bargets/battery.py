@@ -7,7 +7,6 @@ __license__: str = "MIT"
 __maintainer__: str = "Niklas Larsson"
 __status__: str = "Alpha"
 
-import abc
 import logging
 import os
 import pathlib
@@ -210,14 +209,18 @@ class Battery:
 
 
 
-class Notification(abc.ABC):
-    """Abstract base class for all sorts of Notification subclasses."""
+    def _set_pending(self) -> None:
+        """Set the status of pending, i.e. the number of pending messages."""
+        try:
+            cmd: list = ["dunstctl", "count", "displayed"]
+            data: object = subprocess.run(cmd, capture_output=True, text=True)
+            self._pending = int(data.stdout.split("\n")[0])
+        except FileNotFoundError:
+            self._notif_server = False
 
-    @abc.abstractmethod
     def display(self) -> None:
         pass
 
-    @abc.abstractmethod
     def close(self) -> None:
         pass
 
