@@ -208,7 +208,9 @@ class Battery:
     def symbol(self) -> str:
         """Get a symbol corresponding to battery's state."""
         if self._state in {"charging", "discharging"}:
-            return "↑" if self.charging else "↓"
+            if self.charging:
+                return self._symbols["charging"]
+            return self._symbols["discharging"]
         return ""
 
     @symbol.setter
@@ -298,20 +300,19 @@ class FullBatteryNotification(Notification):
         return self._pending > 0
 
 
-class WarningNotification(Notification):
-    """Warning notifications handler."""
+class LowBatteryNotification(Notification):
+    """For notifications that nag about low battery."""
 
     def __init__(self, language: str) -> None:
-        """
-        Set up notifications.
-
-        Parameters:
-            language.... Language in which to display warning messages.
-        """
-        self._language: str = language
-        self._message: str = "WARNING: LOW BATTERY CHARGE"
+        super().__init__(language)
         self._pending: int = 0
-        self._nserver: bool = True  # Notification server
+        self._notif_server: bool = True
+        self._set_pending()
+        self._messages: dict = {
+            "custom": "",  # Set when is set in bargets.yaml
+            "en_US.UTF-8": "WARNING: LOW BATTERY CHARGE",
+            "fi_FI.UTF-8": "VAROITUS: AKUN TASO MATALA",
+        }
 
 
     def _set_pending(self) -> None:
@@ -324,11 +325,17 @@ class WarningNotification(Notification):
             self._notif_server = False
 
     def display(self) -> None:
-        """Display warning notification."""
-        if self._language == "fi_FI.UTF-8":
-            self._message = "VAROITUS: AKUN TASO MATALA"
-        if self._nserver:
-            subprocess.run(["notify-send", "--urgency", "critical", self._message])
+        """Notify about low battery."""
+        if self._notif_server:
+            msg: str
+            if self._messages.get("custom"):
+                msg = self._messages["custom"]
+            elif self._messages.get(self._language):
+                msg = self._messages[self._language]
+            elif self._messages.get("en_US.UTF-8"):
+                msg = self._messages["en_US.UTF-8"]
+            cmd: list = ["notify-send", "--urgency", "critical", msg]
+            subprocess.run(cmd)
 
     def close(self) -> None:
         """Close all notifications."""
@@ -337,15 +344,20 @@ class WarningNotification(Notification):
 
     @property
     def message(self) -> str:
-        """Get warning message."""
-        return self._message
+        """Get notification message."""
+        if self._messages.get("custom"):
+            return self._messages["custom"]
+        elif self._messages.get(self._language):
+            return self._messages[self._language]
+        elif self._messages.get("en_US.UTF-8"):
+            return self._messages["en_US.UTF-8"]
 
     @message.setter
     def message(self, new: str) -> None:
         """Set new notification message."""
         if not isinstance(new, str):
             raise ValueError("Warning message has to be of type str")
-        self._message = new
+        self._messages["custom"] = new
 
     @property
     def pending(self) -> bool:
