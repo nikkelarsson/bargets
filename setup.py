@@ -69,10 +69,10 @@ setup(
     # Which Python versions are supported?
     # e.g. 'pip install' will check this and refuse to install
     # the project if the version doesn't match
-    #python_requires=">=3.8",  # Optional
+    python_requires=">=3.10",  # Optional
 
     # Any dependencies?
-    #install_requires=[],  # Optional
+    install_requires=["ruamel.yaml"],  # Optional
 
     # Need to install, for example, man-pages that your project has?
     # data_files=[("man/man1", ["docs/bargets.1"])],  # Optional
