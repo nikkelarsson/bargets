@@ -13,7 +13,7 @@ setup(
     name="bargets",  # Required
 
     # Version?
-    version="0.1.0a0",  # Required
+    version="0.1.0rc1",  # Required
 
     # What does your project do?
     description="Tiny arsenal of widgets for statusbars",  # Optional
