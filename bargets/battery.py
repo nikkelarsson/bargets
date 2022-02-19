@@ -43,10 +43,8 @@ class Battery:
         Set up a battery.
 
         Parameters:
-            index.... The index of a battery, which data is read.
-            This index corresponds directly to the acpi -b's
-            output; for example, if index specified is 1, then
-            the first entry from the output of 'acpi -b' is used, if found.
+            index.... Basically, the row number from `acpi -b`s output.
+            i.e. if [index] is 1, then the first row is selected.
         """
 
         if not isinstance(index, int):
@@ -258,8 +256,8 @@ class WarningNotification(Notification):
             subprocess.run(["notify-send", "--urgency", "critical", self._message])
 
     def close(self) -> None:
-        """Close warning messages."""
-        if self._nserver:
+        """Close all notifications."""
+        if self._notif_server:
             subprocess.run(["dunstctl", "close"])
 
     @property
@@ -269,7 +267,7 @@ class WarningNotification(Notification):
 
     @message.setter
     def message(self, new: str) -> None:
-        """Set new warning message."""
+        """Set new notification message."""
         if not isinstance(new, str):
             raise ValueError("Warning message has to be of type str")
         self._message = new
