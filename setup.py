@@ -53,11 +53,10 @@ setup(
         # Python versions? These aren't checked by 'pip install'
         # More info at: https://pypi.org/classifiers/
         "Programming Language :: Python :: 3",
-
     ],
 
     # What does your project relate to?
-    #keywords="",  # Optional
+    keywords="widgets utilities statusbars",  # Optional
 
     # Does your project consist of only one or few python files?
     # If that's the case, use this.
