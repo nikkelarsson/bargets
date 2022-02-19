@@ -96,7 +96,7 @@ setup(
 
     # Additional URLs that are relevant to your project
     project_urls={  # Optional
-        #"Bug Reports": "https://github.com...",
+        "Bug Reports": "https://github.com/nikkelarsson/bargets/issues",
         "Source": "https://github.com/nikkelarsson/bargets"
     }
 )
