@@ -13,9 +13,10 @@ pip install bargets
 To use a widget in your statusbar, simply provide path to the widget in your
 statusbar's config. Make sure to check where **pip** installed the widgets, by
 typing `which <widget name>` against any of the widgets, so that you know what
-path to use. Let's assume that **pip** installed the widgets into `$HOME/.local/bin`.
-If you're using **polybar** and you'd like to use the **battery** widget, then
-you'd do the following in **polybar's** config:
+path to use.
+
+### Example: polybar
+The following is a snippet of how you could use the battery widget with **polybar**:
 
 ``` lua
 [battery]
