@@ -4,7 +4,6 @@ __program__: str = "bargets-cpu"
 __author__: str = "Niklas Larsson"
 __credits__: list = ["Niklas Larsson"]
 __license__: str = "MIT"
-__version__: str = "0.1.0a0"
 __maintainer__: str = "Niklas Larsson"
 __status__: str = "Alpha"
 
@@ -14,84 +13,7 @@ import subprocess
 
 import ruamel.yaml
 
-
-class Config:
-    """For preparing other Config classes."""
-
-    def __init__(self, log: bool=False) -> None:
-        """Set up common values for base classes."""
-        self._log: bool = log
-        self._yaml: object = ruamel.yaml.YAML()
-        self._path: object = pathlib.PurePath(f"{pathlib.Path.home()}/.config/bargets/cpu.yaml")
-        logging.basicConfig(format="[%(levelname)s] %(message)s", level=logging.DEBUG)
-
-    @property
-    def log(self) -> bool:
-        """Get if logging is on."""
-        return self._log
-
-    @log.setter
-    def log(self, value) -> None:
-        """Set logging on or off."""
-        if value not in {True, False}:
-            raise ValueError("Log can be either True or False")
-        self._log = value
-
-
-class ConfigParser(Config):
-    """For reading user configuration."""
-
-    def __init__(self, log: bool=False) -> None:
-        """Set up ConfigParser."""
-        super().__init__(log=log)
-        self._config: object = None
-        self._unit: str = "celcius"
-        self._indicator: str = "°C"
-        self._prefix: str = ""
-        self._suffix: str = ""
-
-    @property
-    def unit(self) -> str:
-        """Get temperature unit."""
-        return self._unit
-
-    @property
-    def indicator(self) -> str:
-        """Get indicator."""
-        return self._indicator
-
-    @property
-    def prefix(self) -> str:
-        """Get prefix."""
-        return self._prefix
-
-    @property
-    def suffix(self) -> str:
-        """Get suffix."""
-        return self._suffix
-
-    def load(self) -> None:
-        """Load user config."""
-        if pathlib.Path(str(self._path)).exists():
-            if self.log:
-                logging.debug(f"Loading user config {str(self._path)!r}...")
-            with open(str(self._path), "r") as f:
-                self._config = self._yaml.load(f)
-
-    def parse(self) -> None:
-        """Parse user config."""
-        if self._config:
-            if self.log:
-                logging.debug(f"Parsing user config {str(self._path)!r}...")
-            for key, value in self._config.items():
-                if key == "unit":
-                    self._unit = value
-                elif key == "indicator":
-                    self._indicator = value
-                elif key == "prefix":
-                    self._prefix = value
-                elif key == "suffix":
-                    self._suffix = value
+from bargets import configparser
 
 
 class CPUTemperature:
@@ -104,26 +26,28 @@ class CPUTemperature:
         self._indicator: str = "°C"
         self._prefix: str = ""
         self._suffix: str = ""
+        self._set_temperature()
 
-        data: object = None
-
+    def _set_temperature(self) -> None:
+        """Set temperature reading, if possible."""
         try:
             cmd: list = ["sensors"]
-            data = subprocess.run(cmd, capture_output=True, text=True)
-        except FileNotFoundError:
-            self._temp = "N/A"
-
-        # Set temperature
-        if data:
+            data: object = subprocess.run(cmd, capture_output=True, text=True)
+            text: list = []
             for row in data.stdout.split("\n"):
                 if row.startswith("CPU"):
-                    for field in row.split():
-                        if "°C" in field:
-                            self._temp = field.replace("+", "").replace("°C", "")
-                            break
-                        elif "°F" in field:
-                            self._temp = field.replace("+", "").replace("°F", "")
-                            break
+                    text = row.split()
+                    break
+            for field in text:
+                if "°C" in field:
+                    self._temp = field.replace("+", "").replace("°C", "")
+                    break
+                elif "°F" in field:
+                    self._temp = field.replace("+", "").replace("°F", "")
+                    break
+        except FileNotFoundError:
+            self._temp = "N/A"
+            self._indicator = ""
 
     @property
     def suffix(self) -> str:
@@ -164,8 +88,11 @@ class CPUTemperature:
     @property
     def temp(self) -> str:
         """Get cpu temperature."""
-        # Due to floating point errors, round temp with 1 decimal precision
-        return round(float(self._temp), 1)
+        if self._temp:
+            if self._temp == "N/A":
+                return self._temp
+            # Due to floating point errors, round temp with 1 decimal precision
+            return str(round(float(self._temp), 1))
 
     @property
     def unit(self) -> str:
@@ -194,9 +121,20 @@ def main() -> None:
     """Main function."""
 
     cpu: object = CPUTemperature()
-    cparser: object = ConfigParser(log=True)
-    cparser.log = False
+    config: CPUConfigParser = configparser.CPUConfigParser()
+    config.parse()
 
+    # Parse config (if such exists) and set widget's looks
+    if config.indicator:
+        cpu.indicator = config.indicator
+    if config.unit:
+        cpu.unit = config.unit
+    if config.prefix:
+        cpu.prefix = config.prefix
+    if config.suffix:
+        cpu.suffix = config.suffix
+
+    # Display cpu temperature
     print(f"{cpu.prefix}{cpu.temp}{cpu.indicator}{cpu.suffix}")
 
 

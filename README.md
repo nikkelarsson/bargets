@@ -13,9 +13,10 @@ pip install bargets
 To use a widget in your statusbar, simply provide path to the widget in your
 statusbar's config. Make sure to check where **pip** installed the widgets, by
 typing `which <widget name>` against any of the widgets, so that you know what
-path to use. Let's assume that **pip** installed the widgets into `$HOME/.local/bin`.
-If you're using **polybar** and you'd like to use the **battery** widget, then
-you'd do the following in **polybar's** config:
+path to use.
+
+### Example: polybar
+The following is a snippet of how you could use the battery widget with **polybar**:
 
 ``` lua
 [battery]
@@ -23,6 +24,11 @@ type = custom/script
 exec = $HOME/.local/bin/bargets-battery
 interval = 5
 ```
+
+# Configuration: bargets.yaml
+If you wish, you can configure each widget how you like in **bargets.yaml**.
+First, you need to create a file called **bargets.yaml** to ~/.config/bargets.
+You can copy example configuration from [here](examples).
 
 # Widgets
 | Widget       | Command          |
@@ -35,3 +41,7 @@ interval = 5
 | -----------: | :------------ |
 | Python       | 3.8 or higher |
 | OS           | MacOS, Linux  |
+
+# Todo
+- [ ] Add tests
+- [ ] Add command line options

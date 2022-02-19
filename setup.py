@@ -13,14 +13,14 @@ setup(
     name="bargets",  # Required
 
     # Version?
-    version="0.1.0a0",  # Required
+    version="0.1.0rc1",  # Required
 
     # What does your project do?
     description="Tiny arsenal of widgets for statusbars",  # Optional
 
     # Longer description, that users will see when
     # they visit your project at PyPI
-    #long_description=readme(),  # Optional
+    long_description=readme(),  # Optional
 
     # Denotes that long description is in Markdown;
     # valid values are: text/plain, text/x-rst, text/markdown.
@@ -53,11 +53,10 @@ setup(
         # Python versions? These aren't checked by 'pip install'
         # More info at: https://pypi.org/classifiers/
         "Programming Language :: Python :: 3",
-
     ],
 
     # What does your project relate to?
-    #keywords="",  # Optional
+    keywords="widgets utilities statusbars",  # Optional
 
     # Does your project consist of only one or few python files?
     # If that's the case, use this.
@@ -70,10 +69,10 @@ setup(
     # Which Python versions are supported?
     # e.g. 'pip install' will check this and refuse to install
     # the project if the version doesn't match
-    #python_requires=">=3.8",  # Optional
+    python_requires=">=3.10",  # Optional
 
     # Any dependencies?
-    #install_requires=[],  # Optional
+    install_requires=["ruamel.yaml"],  # Optional
 
     # Need to install, for example, man-pages that your project has?
     # data_files=[("man/man1", ["docs/bargets.1"])],  # Optional
@@ -97,7 +96,7 @@ setup(
 
     # Additional URLs that are relevant to your project
     project_urls={  # Optional
-        #"Bug Reports": "https://github.com...",
+        "Bug Reports": "https://github.com/nikkelarsson/bargets/issues",
         "Source": "https://github.com/nikkelarsson/bargets"
     }
 )
