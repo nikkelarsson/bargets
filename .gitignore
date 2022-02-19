@@ -1,6 +1,9 @@
 # Compiled Python modules
 *.pyc
 
+# Binaries
+bin/
+
 # Virtual environment
 venv/
 

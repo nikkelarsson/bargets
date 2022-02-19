@@ -4,11 +4,9 @@ __program__: str = "bargets-battery"
 __author__: str = "Niklas Larsson"
 __credits__: list = ["Niklas Larsson"]
 __license__: str = "MIT"
-__version__: str = "0.1.0a0"
 __maintainer__: str = "Niklas Larsson"
 __status__: str = "Alpha"
 
-import abc
 import logging
 import os
 import pathlib
@@ -17,162 +15,24 @@ import subprocess
 
 import ruamel.yaml
 
-
-class Config:
-    """For preparing other Config classes."""
-
-    def __init__(self, log: bool=False) -> None:
-        """Set up common values for base classes."""
-        self._log: bool = log
-        self._yaml: object = ruamel.yaml.YAML()
-        self._path: object = pathlib.PurePath(f"{pathlib.Path.home()}/.config/bargets/battery.yaml")
-        logging.basicConfig(format="[%(levelname)s] %(message)s", level=logging.DEBUG)
-
-    @property
-    def log(self) -> bool:
-        """Get if logging is on."""
-        return self._log
-
-    @log.setter
-    def log(self, value) -> None:
-        """Set logging on or off."""
-        if value not in {True, False}:
-            raise ValueError("Log can be either True or False")
-        self._log = value
+from bargets import configparser
 
 
-class IndicatorParser(Config):
-    """For parsing indicator."""
+class Acpi:
+    """For fetching the quantity of batteries connected to laptop."""
 
-
-class PrefixParser(Config):
-    """For parsing prefix."""
-
-
-class SuffixParser(Config):
-    """For parsing suffix."""
-
-
-class SuspendParser(Config):
-    """For parsing suspend."""
-
-
-class MessageParser(Config):
-    """For parsing message."""
-
-
-class SymbolsParser(Config):
-    """For parsing symbols."""
-
-
-class ThresholdsParser(Config):
-    """For parsing thresholds."""
-
-
-class ConfigParser(Config):
-    """For reading user configuration."""
-
-    def __init__(self, log: bool=False) -> None:
-        """Set up ConfigParser."""
-        super().__init__(log=log)
-        self._config: object = None
-        self._indicator: str = ""
-        self._prefix: str = ""
-        self._suffix: str = ""
-        self._suspend: bool = True
-        self._message: str = ""
-        self._symbols: dict = dict()
-        self._thresholds: dict = dict()
+    def __init__(self) -> None:
+        self._batteries: int = 0
+        cmd: list = ["acpi", "-b"]
+        data: object = subprocess.run(cmd, capture_output=True, text=True)
+        for _ in data.stdout.split("\n"):
+            if _.startswith("Battery"):
+                self._batteries += 1
 
     @property
-    def indicator(self) -> str:
-        """Get indicator."""
-        return self._indicator
-
-    @property
-    def symbols(self) -> dict:
-        """Get symbols."""
-        return self._symbols
-
-    @property
-    def thresholds(self) -> dict:
-        """Get thresholds."""
-        return self._thresholds
-
-    @property
-    def prefix(self) -> str:
-        """Get prefix."""
-        return self._prefix
-
-    @property
-    def suffix(self) -> str:
-        """Get suffix."""
-        return self._suffix
-
-    @property
-    def suspend(self) -> bool:
-        """Get suspend mode status."""
-        return self._suspend
-
-    @property
-    def message(self) -> str:
-        """Get warning message."""
-        return self._message
-
-    def load(self) -> None:
-        """Load user config."""
-        if pathlib.Path(str(self._path)).exists():
-            if self.log:
-                logging.debug(f"Loading user config {str(self._path)!r}...")
-            with open(str(self._path), "r") as f:
-                self._config = self._yaml.load(f)
-
-    def parse(self) -> None:
-        """Parse user config."""
-        if self._config:
-            if self.log:
-                logging.debug(f"Parsing user config {str(self._path)!r}...")
-
-            for key, value in self._config.items():
-                if key == "indicator":
-                    if not isinstance(value, str):
-                        raise ValueError("Indicator has to be of type str")
-                    self._indicator = value
-
-                elif key == "symbols":
-                    if not isinstance(value, ruamel.yaml.comments.CommentedMap):
-                        fmt: str = "symbols:\\n 'charging': <val>\\n'discharging': <val>"
-                        raise ValueError(f"Symbols must follow format: {fmt}")
-                    try:
-                        self._symbols["charging"] = value["charging"]
-                        self._symbols["discharging"] = value["discharging"]
-                    except AttributeError:
-                        pass
-
-                elif key == "thresholds":
-                    if not isinstance(value, ruamel.yaml.comments.CommentedMap):
-                        fmt: str = "thresholds:\\n 'low': <val>\\n'critical': <val>"
-                        raise ValueError(f"Thresholds must follow format: {fmt}")
-                    try:
-                        self._thresholds["low"] = value["low"]
-                        self._thresholds["critical"] = value["critical"]
-                    except AttributeError:
-                        pass
-
-                elif key == "prefix":
-                    if not isinstance(value, str):
-                        raise ValueError("Prefix has to be of type str")
-                    self._prefix = value
-
-                elif key == "suffix":
-                    if not isinstance(value, str):
-                        raise ValueError("Suffix has to be of type str")
-                    self._suffix = value
-
-                elif key == "suspend":
-                    if not isinstance(value, bool):
-                        raise ValueError("Suspend has to be of type bool")
-                    self._suspend = value
+    def batteries(self) -> int:
+        """Get the number of batteries."""
+        return self._batteries
 
 
 class Battery:
@@ -183,59 +43,70 @@ class Battery:
         Set up a battery.
 
         Parameters:
-            index.... The index of a battery, which data is read.
-            This index corresponds directly to the acpi -b's
-            output; for example, if index specified is 1, then
-            the first entry from the output of 'acpi -b' is used, if found.
+            index.... Basically, the row number from `acpi -b`s output.
+            i.e. if [index] is 1, then the first row is selected.
         """
+
         if not isinstance(index, int):
             raise ValueError("Index must be of type int")
 
         self._index: str = index
         self._suspend: bool = True
-        self._charges: dict = {"low": False, "critical": False}
-        self._thresholds: dict = {"low": 5, "critical": 3}
-        self._symbols: dict = {"charging": "↑", "discharging": "↓"}
         self._indicator: str = "%"
         self._state: str = ""
         self._charge: str = ""
+        self._charges: dict[str, bool] = {"low": False, "critical": False}
 
-        info: object = None
+        self._thresholds: dict[str, int] = {
+            "full": 99,
+            "low": 5,
+            "critical": 3
+        }
+
+        self._symbols: dict[str, str] = {
+            "charging": "↑",
+            "discharging": "↓"
+        }
 
         try:
             cmd: list = ["acpi", "-b"]
-            info = subprocess.run(cmd, capture_output=True, text=True)
+            info: object = subprocess.run(cmd, capture_output=True, text=True)
+            self._set_state(info)
+            self._set_charge(info)
         except FileNotFoundError:
             self._state = "N/A"
             self._charge = "N/A"
+            self._indicator = ""
+            self._symbols["charging"] = ""
+            self._symbols["discharging"] = ""
 
-        # Set battery's state (i.e. charging, discharging, not charging etc.)
-        if info:
-            for idx, line in enumerate(info.stdout.split("\n"), 1):
-                if line.startswith("Battery"):
-                    if idx == self._index:
-                        line = line.lower()
-                        data: list = line.split()
-                        if "not charging" in line:
-                            self._state = " ".join(data[2:4]).replace(",", "")
-                        elif "discharging" in line or "charging" in line:
-                            self._state = data[2].replace(",", "")
-                        del data, line
-                        break
+    def _set_state(self, info: object) -> None:
+        """Initialize and set battery state, reading it from `acpi -b`."""
+        for idx, line in enumerate(info.stdout.split("\n"), 1):
+            if line.startswith("Battery"):
+                if idx == self._index:
+                    line = line.lower()
+                    data: list = line.split()
+                    if "not charging" in line:
+                        self._state = " ".join(data[2:4]).replace(",", "")
+                    elif "discharging" in line or "charging" in line:
+                        self._state = data[2].replace(",", "")
+                    del data, line
+                    break
 
-        # Set battery's charge
-        if info:
-            for idx, line in enumerate(info.stdout.split("\n"), 1):
-                if line.startswith("Battery"):
-                    if idx == self._index:
-                        line = line.lower()
-                        data: list = line.split()
-                        if "not charging" in line:
-                            self._charge = data[4].replace(",", "").replace("%", "")
-                        elif "discharging" in line or "charging" in line:
-                            self._charge = data[3].replace(",", "").replace("%", "")
-                        del data, line
-                        break
+    def _set_charge(self, info: object) -> None:
+        """Initialize and set battery charge, reading it from `acpi -b`."""
+        for idx, line in enumerate(info.stdout.split("\n"), 1):
+            if line.startswith("Battery"):
+                if idx == self._index:
+                    line = line.lower()
+                    data: list = line.split()
+                    if "not charging" in line:
+                        self._charge = data[4].replace(",", "").replace("%", "")
+                    elif "discharging" in line or "charging" in line:
+                        self._charge = data[3].replace(",", "").replace("%", "")
+                    del data, line
+                    break
 
     @property
     def indicator(self) -> str:
@@ -265,6 +136,26 @@ class Battery:
     def charge(self) -> str:
         """Get battery's charge."""
         return self._charge
+
+    @property
+    def full(self) -> bool:
+        """Check if battery is fully charged."""
+        if self._charge:
+            if self._charge in {"N/A"}:
+                return False
+            if int(self._charge) >= self._thresholds["full"]:
+                return True
+
+        return False
+
+    @full.setter
+    def full(self, value: int) -> None:
+        """Set what the threshold for 'full' is."""
+        if not isinstance(value, int):
+            raise ValueError("Threshold for 'full' has to be of type integer")
+        if 90 > value > 100:
+            raise ValueError("Threshold for 'full' has to be > 90 and < 100")
+        self._thresholds["full"] = value
 
     @property
     def low(self) -> bool:
@@ -317,7 +208,9 @@ class Battery:
     def symbol(self) -> str:
         """Get a symbol corresponding to battery's state."""
         if self._state in {"charging", "discharging"}:
-            return "↑" if self.charging else "↓"
+            if self.charging:
+                return self._symbols["charging"]
+            return self._symbols["discharging"]
         return ""
 
     @symbol.setter
@@ -325,73 +218,146 @@ class Battery:
         """Set new symbol indicators for charge and discharge states."""
         if not isinstance(values, dict):
             raise ValueError("Symbols must be provided in form of dict")
-        try:
-            self._symbols["charging"] = values["charging"]
-            self._symbols["discharging"] = values["discharging"]
-        except KeyError:
-            fmt: str = "{'charging': <val>, 'discharging': <val>}"
-            raise KeyError(f"Symbols must be given like: {fmt}")
+        if "charging" in values:
+            if not isinstance(values.get("charging"), str):
+                raise ValueError("Symbol must be a string")
+            self._symbols["charging"] = values.get("charging")
+        if "discharging" in values:
+            if not isinstance(values.get("discharging"), str):
+                raise ValueError("Symbol must be a string")
+            self._symbols["discharging"] = values.get("discharging")
 
 
-class Notification(abc.ABC):
-    """Abstract base class for all sorts of Notification subclasses."""
-
-    @abc.abstractmethod
-    def display(self) -> None:
-        pass
-
-    @abc.abstractmethod
-    def close(self) -> None:
-        pass
-
-
-class WarningNotification(Notification):
-    """Warning notifications handler."""
+class Notification:
+    """For setting up other Notification classes."""
 
     def __init__(self, language: str) -> None:
-        """
-        Set up notifications.
-
-        Parameters:
-            language.... Language in which to display warning messages.
-        """
+        """Set up language to display notifications in."""
         self._language: str = language
-        self._message: str = "WARNING: LOW BATTERY CHARGE"
+
+
+class FullBatteryNotification(Notification):
+    """Notifications that nag about full battery."""
+
+    def __init__(self, language: str) -> None:
+        super().__init__(language)
         self._pending: int = 0
-        self._nserver: bool = True  # Notification server
+        self._notif_server: bool = True
+        self._set_pending()
+        self._messages: dict[str, str] = {
+            "custom": "",  # Set when is set in bargets.yaml
+            "en_US.UTF-8": "Battery fully charged",
+            "fi_FI.UTF-8": "Akku on ladattu täyteen",
+        }
 
-        data: object = None
-
+    def _set_pending(self) -> None:
+        """Set the status of pending, i.e. the number of pending messages."""
         try:
-            cmds: list = ["dunstctl", "count", "displayed"]
-            data = subprocess.run(cmds, capture_output=True, text=True)
+            cmd: list = ["dunstctl", "count", "displayed"]
+            data: object = subprocess.run(cmd, capture_output=True, text=True)
             self._pending = int(data.stdout.split("\n")[0])
         except FileNotFoundError:
-            self._nserver = False
+            self._notif_server = False
 
     def display(self) -> None:
-        """Display warning notification."""
-        if self._language == "fi_FI.UTF-8":
-            self._message = "VAROITUS: AKUN TASO MATALA"
-        if self._nserver:
-            subprocess.run(["notify-send", "--urgency", "critical", self._message])
+        """Notify about full battery."""
+        if self._notif_server:
+            msg: str
+            if self._messages.get("custom"):
+                msg = self._messages["custom"]
+            elif self._messages.get(self._language):
+                msg = self._messages[self._language]
+            elif self._messages.get("en_US.UTF-8"):
+                msg = self._messages["en_US.UTF-8"]
+            cmd: list = ["notify-send", msg]
+            subprocess.run(cmd)
 
     def close(self) -> None:
-        """Close warning messages."""
-        if self._nserver:
+        """Close all the notifications."""
+        if self._notif_server:
             subprocess.run(["dunstctl", "close"])
 
     @property
     def message(self) -> str:
-        """Get warning message."""
-        return self._message
+        """Get notification message."""
+        if self._messages.get("custom"):
+            return self._messages["custom"]
+        elif self._messages.get(self._language):
+            return self._messages[self._language]
+        elif self._messages.get("en_US.UTF-8"):
+            return self._messages["en_US.UTF-8"]
 
     @message.setter
     def message(self, new: str) -> None:
-        """Set new warning message."""
+        """Set new notification message."""
         if not isinstance(new, str):
             raise ValueError("Warning message has to be of type str")
-        self._message = new
+        self._messages["custom"] = new
+
+    @property
+    def pending(self) -> bool:
+        """Check if any pending notifications exist."""
+        return self._pending > 0
+
+
+class LowBatteryNotification(Notification):
+    """For notifications that nag about low battery."""
+
+    def __init__(self, language: str) -> None:
+        super().__init__(language)
+        self._pending: int = 0
+        self._notif_server: bool = True
+        self._set_pending()
+        self._messages: dict = {
+            "custom": "",  # Set when is set in bargets.yaml
+            "en_US.UTF-8": "WARNING: LOW BATTERY CHARGE",
+            "fi_FI.UTF-8": "VAROITUS: AKUN TASO MATALA",
+        }
+
+
+    def _set_pending(self) -> None:
+        """Set the status of pending, i.e. the number of pending messages."""
+        try:
+            cmd: list = ["dunstctl", "count", "displayed"]
+            data: object = subprocess.run(cmd, capture_output=True, text=True)
+            self._pending = int(data.stdout.split("\n")[0])
+        except FileNotFoundError:
+            self._notif_server = False
+
+    def display(self) -> None:
+        """Notify about low battery."""
+        if self._notif_server:
+            msg: str
+            if self._messages.get("custom"):
+                msg = self._messages["custom"]
+            elif self._messages.get(self._language):
+                msg = self._messages[self._language]
+            elif self._messages.get("en_US.UTF-8"):
+                msg = self._messages["en_US.UTF-8"]
+            cmd: list = ["notify-send", "--urgency", "critical", msg]
+            subprocess.run(cmd)
+
+    def close(self) -> None:
+        """Close all notifications."""
+        if self._notif_server:
+            subprocess.run(["dunstctl", "close"])
+
+    @property
+    def message(self) -> str:
+        """Get notification message."""
+        if self._messages.get("custom"):
+            return self._messages["custom"]
+        elif self._messages.get(self._language):
+            return self._messages[self._language]
+        elif self._messages.get("en_US.UTF-8"):
+            return self._messages["en_US.UTF-8"]
+
+    @message.setter
+    def message(self, new: str) -> None:
+        """Set new notification message."""
+        if not isinstance(new, str):
+            raise ValueError("Warning message has to be of type str")
+        self._messages["custom"] = new
 
     @property
     def pending(self) -> bool:
@@ -403,8 +369,35 @@ def main() -> None:
     """Main function."""
 
     language: str = os.environ["LANG"]
-    warnings: object = WarningNotification(language)
-    batteries: list = [Battery(b) for b in range(1, 3)]
+    notifications: dict[str, Notification] = {
+        "battery_low": LowBatteryNotification(language),
+        "battery_full": FullBatteryNotification(language)
+    }
+
+    # Automatically determine the number of batteries
+    acpi: Acpi = Acpi()
+    batteries: list[Battery] = [Battery(b) for b in range(1, acpi.batteries + 1)]
+
+    # Parse config (if such exists) and set widget's looks
+    config: BatteryConfigParser = configparser.BatteryConfigParser()
+    config.parse()
+    if config.notification_low:
+        notifications["battery_low"].message = config.notification_low
+    if config.notification_full:
+        notifications["battery_full"].message = config.notification_full
+    for battery in batteries:
+        if config.suspend:
+            battery.suspend = config.suspend
+        if config.threshold_full:
+            battery.full = config.threshold_full
+        if config.threshold_low:
+            battery.low = config.threshold_low
+        if config.threshold_critical:
+            battery.critical = config.threshold_critical
+        if config.symbol:
+            battery.symbol = config.symbol
+        if config.indicator:
+            battery.indicator = config.indicator
 
     # Display battery data
     for idx, i in enumerate(batteries):
@@ -413,25 +406,31 @@ def main() -> None:
         print(f"{i.symbol}{i.charge}{i.indicator}", end="")
     print()
 
-    # Suspend system if the last (or in this case the "first")
-    # battery is running on critically low charge. I'm not sure
-    # in what order batteries are usually used, but it seems that
-    # at least on my Thinkpad X240 (has internal battery + external
-    # one) the inner battery is used first (I guess?), and then the
-    # outer one.
-    if batteries[0].critical and batteries[0].suspend:
-        subprocess.run(["systemctl", "suspend"])
-
-    # Display warning if last battery is running on low charge
+    # Display warning notification if the last battery that
+    # still has juice left, is running on low charge
     if not any([battery.charging for battery in batteries]):
+        # Suspend system if the last (or in this case, the "first")
+        # battery is running on critically low charge. I'm not sure
+        # in what order batteries are usually used, but it seems that
+        # at least on my Thinkpad X240 (has internal battery + external
+        # one) the inner battery is used first (I guess?), and then the
+        # outer one.
+        if batteries[0].critical and batteries[0].suspend:
+            subprocess.run(["dunstctl", "set-paused", "true"])
+            subprocess.run(["systemctl", "suspend"])
         if batteries[0].low:
-            if not warnings.pending:
-                warnings.display()
+            if not notifications["battery_low"].pending:
+                notifications["battery_low"].display()
                 sys.exit(0)
 
-    # Close warnings when plugging a charger
-    if warnings.pending:
-        warnings.close()
+    # Display notification when battery is fully charged
+    if any([battery.charging for battery in batteries]):
+        if notifications["battery_low"].pending:
+            notifications["battery_low"].close()
+        if all([battery.full for battery in batteries]):
+            if not notifications["battery_full"].pending:
+                notifications["battery_full"].display()
+                sys.exit(0)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,20 @@
+# bargets.yaml - example config for barget's widgets
+# Uncomment the options you wish to change ^_^
+
+# cpu:
+    # unit: fahrenheit  # default: celcius
+    # prefix: "cpu: "   # default: ""
+    # suffix: " haha"   # default: ""
+    # indicator: "°"    # default: "°C"
+
+
+# battery:
+    # suspend: false  # default: true
+    # indicator: "#"  # default: "%"
+    # threshold.full: 95  # default: 99
+    # threshold.low: 10  # default: 5
+    # threshold.critical: 5  # default: 3
+    # symbol.discharging: "«"  # default: "↓"
+    # symbol.charging: "»"  # default: "↑"
+    # notification.low: "low battery!"  # default: "WARNING: LOW BATTERY CHARGE"
+    # notification.full: "full battery!"  # default: "Battery fully charged"
