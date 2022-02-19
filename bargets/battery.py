@@ -49,54 +49,67 @@ class Battery:
             output; for example, if index specified is 1, then
             the first entry from the output of 'acpi -b' is used, if found.
         """
+
         if not isinstance(index, int):
             raise ValueError("Index must be of type int")
 
         self._index: str = index
         self._suspend: bool = True
-        self._charges: dict = {"low": False, "critical": False}
-        self._thresholds: dict = {"low": 5, "critical": 3}
-        self._symbols: dict = {"charging": "↑", "discharging": "↓"}
         self._indicator: str = "%"
         self._state: str = ""
         self._charge: str = ""
+        self._charges: dict[str, bool] = {"low": False, "critical": False}
 
-        info: object = None
+        self._thresholds: dict[str, int] = {
+            "full": 99,
+            "low": 5,
+            "critical": 3
+        }
+
+        self._symbols: dict[str, str] = {
+            "charging": "↑",
+            "discharging": "↓"
+        }
 
         try:
             cmd: list = ["acpi", "-b"]
-            info = subprocess.run(cmd, capture_output=True, text=True)
+            info: object = subprocess.run(cmd, capture_output=True, text=True)
+            self._set_state(info)
+            self._set_charge(info)
         except FileNotFoundError:
             self._state = "N/A"
             self._charge = "N/A"
+            self._indicator = ""
+            self._symbols["charging"] = ""
+            self._symbols["discharging"] = ""
 
-        # Set battery's state (i.e. charging, discharging, not charging etc.)
-        if info:
-            for idx, line in enumerate(info.stdout.split("\n"), 1):
-                if line.startswith("Battery"):
-                    if idx == self._index:
-                        line = line.lower()
-                        data: list = line.split()
-                        if "not charging" in line:
-                            self._state = " ".join(data[2:4]).replace(",", "")
-                        elif "discharging" in line or "charging" in line:
-                            self._state = data[2].replace(",", "")
-                        del data, line
-                        break
+    def _set_state(self, info: object) -> None:
+        """Initialize and set battery state, reading it from `acpi -b`."""
+        for idx, line in enumerate(info.stdout.split("\n"), 1):
+            if line.startswith("Battery"):
+                if idx == self._index:
+                    line = line.lower()
+                    data: list = line.split()
+                    if "not charging" in line:
+                        self._state = " ".join(data[2:4]).replace(",", "")
+                    elif "discharging" in line or "charging" in line:
+                        self._state = data[2].replace(",", "")
+                    del data, line
+                    break
 
-        # Set battery's charge
-        if info:
-            for idx, line in enumerate(info.stdout.split("\n"), 1):
-                if line.startswith("Battery"):
-                    if idx == self._index:
-                        line = line.lower()
-                        data: list = line.split()
-                        if "not charging" in line:
-                            self._charge = data[4].replace(",", "").replace("%", "")
-                        elif "discharging" in line or "charging" in line:
-                            self._charge = data[3].replace(",", "").replace("%", "")
-                        del data, line
-                        break
+    def _set_charge(self, info: object) -> None:
+        """Initialize and set battery charge, reading it from `acpi -b`."""
+        for idx, line in enumerate(info.stdout.split("\n"), 1):
+            if line.startswith("Battery"):
+                if idx == self._index:
+                    line = line.lower()
+                    data: list = line.split()
+                    if "not charging" in line:
+                        self._charge = data[4].replace(",", "").replace("%", "")
+                    elif "discharging" in line or "charging" in line:
+                        self._charge = data[3].replace(",", "").replace("%", "")
+                    del data, line
+                    break
 
     @property
     def indicator(self) -> str:
@@ -224,14 +237,15 @@ class WarningNotification(Notification):
         self._pending: int = 0
         self._nserver: bool = True  # Notification server
 
-        data: object = None
 
+    def _set_pending(self) -> None:
+        """Set the status of pending, i.e. the number of pending messages."""
         try:
-            cmds: list = ["dunstctl", "count", "displayed"]
-            data = subprocess.run(cmds, capture_output=True, text=True)
+            cmd: list = ["dunstctl", "count", "displayed"]
+            data: object = subprocess.run(cmd, capture_output=True, text=True)
             self._pending = int(data.stdout.split("\n")[0])
         except FileNotFoundError:
-            self._nserver = False
+            self._notif_server = False
 
     def display(self) -> None:
         """Display warning notification."""

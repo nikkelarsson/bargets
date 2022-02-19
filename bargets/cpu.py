@@ -26,26 +26,28 @@ class CPUTemperature:
         self._indicator: str = "°C"
         self._prefix: str = ""
         self._suffix: str = ""
+        self._set_temperature()
 
-        data: object = None
-
+    def _set_temperature(self) -> None:
+        """Set temperature reading, if possible."""
         try:
             cmd: list = ["sensors"]
-            data = subprocess.run(cmd, capture_output=True, text=True)
-        except FileNotFoundError:
-            self._temp = "N/A"
-
-        # Set temperature
-        if data:
+            data: object = subprocess.run(cmd, capture_output=True, text=True)
+            text: list = []
             for row in data.stdout.split("\n"):
                 if row.startswith("CPU"):
-                    for field in row.split():
-                        if "°C" in field:
-                            self._temp = field.replace("+", "").replace("°C", "")
-                            break
-                        elif "°F" in field:
-                            self._temp = field.replace("+", "").replace("°F", "")
-                            break
+                    text = row.split()
+                    break
+            for field in text:
+                if "°C" in field:
+                    self._temp = field.replace("+", "").replace("°C", "")
+                    break
+                elif "°F" in field:
+                    self._temp = field.replace("+", "").replace("°F", "")
+                    break
+        except FileNotFoundError:
+            self._temp = "N/A"
+            self._indicator = ""
 
     @property
     def suffix(self) -> str:
@@ -86,8 +88,11 @@ class CPUTemperature:
     @property
     def temp(self) -> str:
         """Get cpu temperature."""
-        # Due to floating point errors, round temp with 1 decimal precision
-        return round(float(self._temp), 1)
+        if self._temp:
+            if self._temp == "N/A":
+                return self._temp
+            # Due to floating point errors, round temp with 1 decimal precision
+            return str(round(float(self._temp), 1))
 
     @property
     def unit(self) -> str:
