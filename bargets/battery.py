@@ -406,25 +406,31 @@ def main() -> None:
         print(f"{i.symbol}{i.charge}{i.indicator}", end="")
     print()
 
-    # Suspend system if the last (or in this case the "first")
-    # battery is running on critically low charge. I'm not sure
-    # in what order batteries are usually used, but it seems that
-    # at least on my Thinkpad X240 (has internal battery + external
-    # one) the inner battery is used first (I guess?), and then the
-    # outer one.
-    if batteries[0].critical and batteries[0].suspend:
-        subprocess.run(["systemctl", "suspend"])
-
-    # Display warning if last battery is running on low charge
+    # Display warning notification if the last battery that
+    # still has juice left, is running on low charge
     if not any([battery.charging for battery in batteries]):
+        # Suspend system if the last (or in this case, the "first")
+        # battery is running on critically low charge. I'm not sure
+        # in what order batteries are usually used, but it seems that
+        # at least on my Thinkpad X240 (has internal battery + external
+        # one) the inner battery is used first (I guess?), and then the
+        # outer one.
+        if batteries[0].critical and batteries[0].suspend:
+            subprocess.run(["dunstctl", "set-paused", "true"])
+            subprocess.run(["systemctl", "suspend"])
         if batteries[0].low:
-            if not warnings.pending:
-                warnings.display()
+            if not notifications["battery_low"].pending:
+                notifications["battery_low"].display()
                 sys.exit(0)
 
-    # Close warnings when plugging a charger
-    if warnings.pending:
-        warnings.close()
+    # Display notification when battery is fully charged
+    if any([battery.charging for battery in batteries]):
+        if notifications["battery_low"].pending:
+            notifications["battery_low"].close()
+        if all([battery.full for battery in batteries]):
+            if not notifications["battery_full"].pending:
+                notifications["battery_full"].display()
+                sys.exit(0)
 
 
 if __name__ == "__main__":
