@@ -20,7 +20,7 @@ setup(
 
     # Longer description, that users will see when
     # they visit your project at PyPI
-    #long_description=readme(),  # Optional
+    long_description=readme(),  # Optional
 
     # Denotes that long description is in Markdown;
     # valid values are: text/plain, text/x-rst, text/markdown.
