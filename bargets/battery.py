@@ -16,162 +16,24 @@ import subprocess
 
 import ruamel.yaml
 
-
-class Config:
-    """For preparing other Config classes."""
-
-    def __init__(self, log: bool=False) -> None:
-        """Set up common values for base classes."""
-        self._log: bool = log
-        self._yaml: object = ruamel.yaml.YAML()
-        self._path: object = pathlib.PurePath(f"{pathlib.Path.home()}/.config/bargets/battery.yaml")
-        logging.basicConfig(format="[%(levelname)s] %(message)s", level=logging.DEBUG)
-
-    @property
-    def log(self) -> bool:
-        """Get if logging is on."""
-        return self._log
-
-    @log.setter
-    def log(self, value) -> None:
-        """Set logging on or off."""
-        if value not in {True, False}:
-            raise ValueError("Log can be either True or False")
-        self._log = value
+from bargets import configparser
 
 
-class IndicatorParser(Config):
-    """For parsing indicator."""
+class Acpi:
+    """For fetching the quantity of batteries connected to laptop."""
 
-
-class PrefixParser(Config):
-    """For parsing prefix."""
-
-
-class SuffixParser(Config):
-    """For parsing suffix."""
-
-
-class SuspendParser(Config):
-    """For parsing suspend."""
-
-
-class MessageParser(Config):
-    """For parsing message."""
-
-
-class SymbolsParser(Config):
-    """For parsing symbols."""
-
-
-class ThresholdsParser(Config):
-    """For parsing thresholds."""
-
-
-class ConfigParser(Config):
-    """For reading user configuration."""
-
-    def __init__(self, log: bool=False) -> None:
-        """Set up ConfigParser."""
-        super().__init__(log=log)
-        self._config: object = None
-        self._indicator: str = ""
-        self._prefix: str = ""
-        self._suffix: str = ""
-        self._suspend: bool = True
-        self._message: str = ""
-        self._symbols: dict = dict()
-        self._thresholds: dict = dict()
+    def __init__(self) -> None:
+        self._batteries: int = 0
+        cmd: list = ["acpi", "-b"]
+        data: object = subprocess.run(cmd, capture_output=True, text=True)
+        for _ in data.stdout.split("\n"):
+            if _.startswith("Battery"):
+                self._batteries += 1
 
     @property
-    def indicator(self) -> str:
-        """Get indicator."""
-        return self._indicator
-
-    @property
-    def symbols(self) -> dict:
-        """Get symbols."""
-        return self._symbols
-
-    @property
-    def thresholds(self) -> dict:
-        """Get thresholds."""
-        return self._thresholds
-
-    @property
-    def prefix(self) -> str:
-        """Get prefix."""
-        return self._prefix
-
-    @property
-    def suffix(self) -> str:
-        """Get suffix."""
-        return self._suffix
-
-    @property
-    def suspend(self) -> bool:
-        """Get suspend mode status."""
-        return self._suspend
-
-    @property
-    def message(self) -> str:
-        """Get warning message."""
-        return self._message
-
-    def load(self) -> None:
-        """Load user config."""
-        if pathlib.Path(str(self._path)).exists():
-            if self.log:
-                logging.debug(f"Loading user config {str(self._path)!r}...")
-            with open(str(self._path), "r") as f:
-                self._config = self._yaml.load(f)
-
-    def parse(self) -> None:
-        """Parse user config."""
-        if self._config:
-            if self.log:
-                logging.debug(f"Parsing user config {str(self._path)!r}...")
-
-            for key, value in self._config.items():
-                if key == "indicator":
-                    if not isinstance(value, str):
-                        raise ValueError("Indicator has to be of type str")
-                    self._indicator = value
-
-                elif key == "symbols":
-                    if not isinstance(value, ruamel.yaml.comments.CommentedMap):
-                        fmt: str = "symbols:\\n 'charging': <val>\\n'discharging': <val>"
-                        raise ValueError(f"Symbols must follow format: {fmt}")
-                    try:
-                        self._symbols["charging"] = value["charging"]
-                        self._symbols["discharging"] = value["discharging"]
-                    except AttributeError:
-                        pass
-
-                elif key == "thresholds":
-                    if not isinstance(value, ruamel.yaml.comments.CommentedMap):
-                        fmt: str = "thresholds:\\n 'low': <val>\\n'critical': <val>"
-                        raise ValueError(f"Thresholds must follow format: {fmt}")
-                    try:
-                        self._thresholds["low"] = value["low"]
-                        self._thresholds["critical"] = value["critical"]
-                    except AttributeError:
-                        pass
-
-                elif key == "prefix":
-                    if not isinstance(value, str):
-                        raise ValueError("Prefix has to be of type str")
-                    self._prefix = value
-
-                elif key == "suffix":
-                    if not isinstance(value, str):
-                        raise ValueError("Suffix has to be of type str")
-                    self._suffix = value
-
-                elif key == "suspend":
-                    if not isinstance(value, bool):
-                        raise ValueError("Suspend has to be of type bool")
-                    self._suspend = value
+    def batteries(self) -> int:
+        """Get the number of batteries."""
+        return self._batteries
 
 
 class Battery:
@@ -324,12 +186,15 @@ class Battery:
         """Set new symbol indicators for charge and discharge states."""
         if not isinstance(values, dict):
             raise ValueError("Symbols must be provided in form of dict")
-        try:
-            self._symbols["charging"] = values["charging"]
-            self._symbols["discharging"] = values["discharging"]
-        except KeyError:
-            fmt: str = "{'charging': <val>, 'discharging': <val>}"
-            raise KeyError(f"Symbols must be given like: {fmt}")
+        if "charging" in values:
+            if not isinstance(values.get("charging"), str):
+                raise ValueError("Symbol must be a string")
+            self._symbols["charging"] = values.get("charging")
+        if "discharging" in values:
+            if not isinstance(values.get("discharging"), str):
+                raise ValueError("Symbol must be a string")
+            self._symbols["discharging"] = values.get("discharging")
+
 
 
 class Notification(abc.ABC):
@@ -402,8 +267,35 @@ def main() -> None:
     """Main function."""
 
     language: str = os.environ["LANG"]
-    warnings: object = WarningNotification(language)
-    batteries: list = [Battery(b) for b in range(1, 3)]
+    notifications: dict[str, Notification] = {
+        "battery_low": LowBatteryNotification(language),
+        "battery_full": FullBatteryNotification(language)
+    }
+
+    # Automatically determine the number of batteries
+    acpi: Acpi = Acpi()
+    batteries: list[Battery] = [Battery(b) for b in range(1, acpi.batteries + 1)]
+
+    # Parse config (if such exists) and set widget's looks
+    config: BatteryConfigParser = configparser.BatteryConfigParser()
+    config.parse()
+    if config.notification_low:
+        notifications["battery_low"].message = config.notification_low
+    if config.notification_full:
+        notifications["battery_full"].message = config.notification_full
+    for battery in batteries:
+        if config.suspend:
+            battery.suspend = config.suspend
+        if config.threshold_full:
+            battery.full = config.threshold_full
+        if config.threshold_low:
+            battery.low = config.threshold_low
+        if config.threshold_critical:
+            battery.critical = config.threshold_critical
+        if config.symbol:
+            battery.symbol = config.symbol
+        if config.indicator:
+            battery.indicator = config.indicator
 
     # Display battery data
     for idx, i in enumerate(batteries):
