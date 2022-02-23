@@ -20,7 +20,10 @@ class Config:
         """Load config file (if such exists)."""
         if pathlib.Path(self._path).exists():
             with open(self._path, "r") as f:
-                self._config = self._yaml.load(f)
+                try:
+                    self._config = self._yaml.load(f)
+                except ruamel.yaml.parser.ParserError:
+                    pass
 
 
 class BatteryConfig:
