@@ -20,7 +20,10 @@ class Config:
         """Load config file (if such exists)."""
         if pathlib.Path(self._path).exists():
             with open(self._path, "r") as f:
-                self._config = self._yaml.load(f)
+                try:
+                    self._config = self._yaml.load(f)
+                except ruamel.yaml.parser.ParserError:
+                    pass
 
 
 class BatteryConfig:
@@ -36,10 +39,8 @@ class BatteryConfig:
         self._thresholds: dict = dict()
         self._symbols: dict = dict()
         self._indicator: str = ""
-        self._notifications: dict[str, str] = {
-            "battery_low": "",
-            "battery_full": "",
-        }
+        self._subject: dict[str, str] = {"low": "", "full": ""}
+        self._body: dict[str, str] = {"low": "", "full": ""}
 
     @property
     def suspend(self) -> bool:
@@ -72,14 +73,24 @@ class BatteryConfig:
         return self._indicator
 
     @property
-    def notification_low(self) -> str:
-        """Get notification.low, if such is set in bargets.yaml."""
-        return self._notifications["battery_low"]
+    def subject_low(self) -> str:
+        """Get subject.low, if such is set in bargets.yaml."""
+        return self._subject["low"]
 
     @property
-    def notification_full(self) -> str:
-        """Get notification.full, if such is set in bargets.yaml."""
-        return self._notifications["battery_full"]
+    def body_low(self) -> str:
+        """Get body.low, if such is set in bargets.yaml."""
+        return self._body["low"]
+
+    @property
+    def subject_full(self) -> str:
+        """Get subject.full, if such is set in bargets.yaml."""
+        return self._subject["full"]
+
+    @property
+    def body_full(self) -> str:
+        """Get body.full, if such is set in bargets.yaml."""
+        return self._body["full"]
 
 
 class BatteryConfigParser(Config, BatteryConfig):
@@ -90,7 +101,10 @@ class BatteryConfigParser(Config, BatteryConfig):
         Config.__init__(self)
         BatteryConfig.__init__(self)
         Config._load(self)
+        self._set_settings()
 
+    def _set_settings(self) -> None:
+        """Initialize settings."""
         opts: list = []
         if self._config:
             opts = [s for k, s in self._config.items() if k == "battery"]
@@ -154,19 +168,33 @@ class BatteryConfigParser(Config, BatteryConfig):
                 raise ValueError("Indicator must be a string")
             self._indicator = self._settings.get("indicator")
 
-    def _parse_notification_low(self) -> None:
-        """Evaluate notification.low option in bargets.yaml."""
-        if "notification.low" in self._settings:
-            if not isinstance(self._settings.get("notification.low"), str):
-                raise ValueError("Notification message must be a string")
-            self._notifications["battery_low"] = self._settings.get("notification.low")
+    def _parse_subject_low(self) -> None:
+        """Evaluate subject.low in bargets.yaml."""
+        if "subject.low" in self._settings:
+            if not isinstance(self._settings.get("subject.low"), str):
+                raise ValueError("Notification subject must be a string")
+            self._subject["low"] = self._settings.get("subject.low")
 
-    def _parse_notification_full(self) -> None:
-        """Evaluate notification.full option in bargets.yaml."""
-        if "notification.full" in self._settings:
-            if not isinstance(self._settings.get("notification.full"), str):
-                raise ValueError("Notification message must be a string")
-            self._notifications["battery_full"] = self._settings.get("notification.full")
+    def _parse_body_low(self) -> None:
+        """Evaluate body.low in bargets.yaml."""
+        if "body.low" in self._settings:
+            if not isinstance(self._settings.get("body.low"), str):
+                raise ValueError("Notification body must be a string")
+            self._body["low"] = self._settings.get("body.low")
+
+    def _parse_subject_full(self) -> None:
+        """Evaluate subject.full in bargets.yaml."""
+        if "subject.full" in self._settings:
+            if not isinstance(self._settings.get("subject.full"), str):
+                raise ValueError("Notification subject must be a string")
+            self._subject["full"] = self._settings.get("subject.full")
+
+    def _parse_body_full(self) -> None:
+        """Evaluate body.full in bargets.yaml."""
+        if "body.full" in self._settings:
+            if not isinstance(self._settings.get("body.full"), str):
+                raise ValueError("Notification body must be a string")
+            self._body["full"] = self._settings.get("body.full")
 
     def parse(self) -> None:
         """Evaluate all options."""
@@ -177,8 +205,10 @@ class BatteryConfigParser(Config, BatteryConfig):
         self._parse_symbol_charging()
         self._parse_symbol_discharging()
         self._parse_indicator()
-        self._parse_notification_low()
-        self._parse_notification_full()
+        self._parse_subject_low()
+        self._parse_body_low()
+        self._parse_subject_full()
+        self._parse_body_full()
 
 
 class CPUConfig:
@@ -224,7 +254,10 @@ class CPUConfigParser(Config, CPUConfig):
         Config.__init__(self)
         CPUConfig.__init__(self)
         Config._load(self)
+        self._set_settings()
 
+    def _set_settings(self) -> None:
+        """Initialize settings."""
         opts: list = []
         if self._config:
             opts = [s for k, s in self._config.items() if k == "cpu"]
