@@ -5,8 +5,10 @@ as Polybar, i3bar etc.
 Where does the name, "bargets", come from? [Bar] Wid[gets].
 
 # Installation
+**bargets** requires **python3.10**, so the way to install is:
+
 ``` bash
-pip install bargets
+python3.10 -m pip install bargets
 ```
 
 # Usage
@@ -28,7 +30,8 @@ interval = 5
 # Configuration: bargets.yaml
 If you wish, you can configure each widget how you like in **bargets.yaml**.
 First, you need to create a file called **bargets.yaml** to ~/.config/bargets.
-You can copy example configuration from [here](examples).
+You can copy example configuration from
+[here](https://github.com/nikkelarsson/bargets/blob/main/examples/bargets.yaml).
 
 # Widgets
 | Widget       | Command          |
@@ -39,9 +42,10 @@ You can copy example configuration from [here](examples).
 # Requirements
 | Requirement  | Note          |
 | -----------: | :------------ |
-| Python       | 3.8 or higher |
+| Python       | 3.10 or higher |
 | OS           | MacOS, Linux  |
 
 # Todo
 - [ ] Add tests
 - [ ] Add command line options
+- [ ] Add screenshot(s)

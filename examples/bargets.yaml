@@ -4,17 +4,26 @@
 # cpu:
     # unit: fahrenheit  # default: celcius
     # prefix: "cpu: "   # default: ""
-    # suffix: " haha"   # default: ""
+    # suffix: " ^_^"   # default: ""
     # indicator: "°"    # default: "°C"
 
 
 # battery:
+    # Suspend system when threshold.critical is met?
     # suspend: false  # default: true
-    # indicator: "#"  # default: "%"
+
+    # Thresholds
     # threshold.full: 95  # default: 99
     # threshold.low: 10  # default: 5
     # threshold.critical: 5  # default: 3
+
+    # Widget looks
+    # indicator: "#"  # default: "%"
     # symbol.discharging: "«"  # default: "↓"
     # symbol.charging: "»"  # default: "↑"
-    # notification.low: "low battery!"  # default: "WARNING: LOW BATTERY CHARGE"
-    # notification.full: "full battery!"  # default: "Battery fully charged"
+
+    # Notification content
+    # subject.low: "Battery alert"  # default: "Battery"
+    # subject.full: "Battery notification"  # default: "Battery"
+    # body.low: "Battery is very low!"  # default: "Battery charge low"
+    # body.full: "Battery is now fully charged!"  # default: "Battery fully charged"
