@@ -244,11 +244,8 @@ class FullBatteryNotification(Notification):
         self._pending: int = 0
         self._notif_server: bool = True
         self._set_pending()
-        self._messages: dict[str, str] = {
-            "custom": "",  # Set when is set in bargets.yaml
-            "en_US.UTF-8": "Battery fully charged",
-            "fi_FI.UTF-8": "Akku on ladattu täyteen",
-        }
+        self._subject: str = self._set_subject()
+        self._body: str = self._set_body()
 
     def _set_pending(self) -> None:
         """Set the status of pending, i.e. the number of pending messages."""
@@ -259,17 +256,34 @@ class FullBatteryNotification(Notification):
         except FileNotFoundError:
             self._notif_server = False
 
+    def _set_subject(self) -> str:
+        """Initialize notification subject."""
+
+        subject: dict[str, str] = {
+            "fi_FI.UTF-8": "Akku",
+            "en_US.UTF-8": "Battery",
+        }
+
+        return subject.get(self._language, subject.get("en_US.UTF-8"))
+
+    def _set_body(self) -> str:
+        """Initialize notification body."""
+
+        body: dict[str, str] = {
+            "fi_FI.UTF-8": "Akku on ladattu täyteen",
+            "en_US.UTF-8": "Battery fully charged",
+        }
+
+        return body.get(self._language, body.get("en_US.UTF-8"))
+
     def display(self) -> None:
         """Notify about full battery."""
         if self._notif_server:
-            msg: str
-            if self._messages.get("custom"):
-                msg = self._messages["custom"]
-            elif self._messages.get(self._language):
-                msg = self._messages[self._language]
-            elif self._messages.get("en_US.UTF-8"):
-                msg = self._messages["en_US.UTF-8"]
-            cmd: list = ["notify-send", msg]
+            cmd: list[str] = ["notify-send"]
+            if self._subject:
+                cmd.append(self._subject)
+            if self._body:
+                cmd.append(self._body)
             subprocess.run(cmd)
 
     def close(self) -> None:
@@ -278,21 +292,28 @@ class FullBatteryNotification(Notification):
             subprocess.run(["dunstctl", "close"])
 
     @property
-    def message(self) -> str:
-        """Get notification message."""
-        if self._messages.get("custom"):
-            return self._messages["custom"]
-        elif self._messages.get(self._language):
-            return self._messages[self._language]
-        elif self._messages.get("en_US.UTF-8"):
-            return self._messages["en_US.UTF-8"]
+    def subject(self) -> str:
+        """Get notification subject."""
+        return self._subject
 
-    @message.setter
-    def message(self, new: str) -> None:
-        """Set new notification message."""
-        if not isinstance(new, str):
-            raise ValueError("Warning message has to be of type str")
-        self._messages["custom"] = new
+    @subject.setter
+    def subject(self, value: str) -> None:
+        """Set new notification subject."""
+        if not isinstance(value, str):
+            raise ValueError("Subject has to be a string")
+        self._subject = value
+
+    @property
+    def body(self) -> str:
+        """Get notification body."""
+        return self._body
+
+    @body.setter
+    def body(self, value: str) -> None:
+        """Set new notification body."""
+        if not isinstance(value, str):
+            raise ValueError("Body has to be a string")
+        self._body = value
 
     @property
     def pending(self) -> bool:
@@ -308,12 +329,8 @@ class LowBatteryNotification(Notification):
         self._pending: int = 0
         self._notif_server: bool = True
         self._set_pending()
-        self._messages: dict = {
-            "custom": "",  # Set when is set in bargets.yaml
-            "en_US.UTF-8": "WARNING: LOW BATTERY CHARGE",
-            "fi_FI.UTF-8": "VAROITUS: AKUN TASO MATALA",
-        }
-
+        self._subject: str = self._set_subject()
+        self._body: str = self._set_body()
 
     def _set_pending(self) -> None:
         """Set the status of pending, i.e. the number of pending messages."""
@@ -324,40 +341,64 @@ class LowBatteryNotification(Notification):
         except FileNotFoundError:
             self._notif_server = False
 
+    def _set_subject(self) -> str:
+        """Initialize notification subject."""
+
+        subject: dict[str, str] = {
+            "fi_FI.UTF-8": "Akku",
+            "en_US.UTF-8": "Battery",
+        }
+
+        return subject.get(self._language, subject.get("en_US.UTF-8"))
+
+    def _set_body(self) -> str:
+        """Initialize notification body."""
+
+        body: dict[str, str] = {
+            "fi_FI.UTF-8": "Akun taso matala",
+            "en_US.UTF-8": "Battery charge low",
+        }
+
+        return body.get(self._language, body.get("en_US.UTF-8"))
+
+    @property
+    def subject(self) -> str:
+        """Get notification subject."""
+        return self._subject
+
+    @subject.setter
+    def subject(self, value: str) -> None:
+        """Set new notification subject."""
+        if not isinstance(value, str):
+            raise ValueError("Subject has to be a string")
+        self._subject = value
+
+    @property
+    def body(self) -> str:
+        """Get notification body."""
+        return self._body
+
+    @body.setter
+    def body(self, value: str) -> None:
+        """Set new notification body."""
+        if not isinstance(value, str):
+            raise ValueError("Body has to be a string")
+        self._body = value
+
     def display(self) -> None:
         """Notify about low battery."""
         if self._notif_server:
-            msg: str
-            if self._messages.get("custom"):
-                msg = self._messages["custom"]
-            elif self._messages.get(self._language):
-                msg = self._messages[self._language]
-            elif self._messages.get("en_US.UTF-8"):
-                msg = self._messages["en_US.UTF-8"]
-            cmd: list = ["notify-send", "--urgency", "critical", msg]
+            cmd: list[str] = ["notify-send", "--urgency", "critical"]
+            if self._subject:
+                cmd.append(self._subject)
+            if self._body:
+                cmd.append(self._body)
             subprocess.run(cmd)
 
     def close(self) -> None:
         """Close all notifications."""
         if self._notif_server:
             subprocess.run(["dunstctl", "close"])
-
-    @property
-    def message(self) -> str:
-        """Get notification message."""
-        if self._messages.get("custom"):
-            return self._messages["custom"]
-        elif self._messages.get(self._language):
-            return self._messages[self._language]
-        elif self._messages.get("en_US.UTF-8"):
-            return self._messages["en_US.UTF-8"]
-
-    @message.setter
-    def message(self, new: str) -> None:
-        """Set new notification message."""
-        if not isinstance(new, str):
-            raise ValueError("Warning message has to be of type str")
-        self._messages["custom"] = new
 
     @property
     def pending(self) -> bool:
@@ -378,13 +419,21 @@ def main() -> None:
     acpi: Acpi = Acpi()
     batteries: list[Battery] = [Battery(b) for b in range(1, acpi.batteries + 1)]
 
-    # Parse config (if such exists) and set widget's looks
+    # Parse config file (if such exists)
     config: BatteryConfigParser = configparser.BatteryConfigParser()
     config.parse()
-    if config.notification_low:
-        notifications["battery_low"].message = config.notification_low
-    if config.notification_full:
-        notifications["battery_full"].message = config.notification_full
+
+    # If notifications are configured in config file, use those values
+    if config.subject_low:
+        notifications["battery_low"].subject = config.subject_low
+    if config.body_low:
+        notifications["battery_low"].body = config.body_low
+    if config.subject_full:
+        notifications["battery_full"].subject = config.subject_full
+    if config.body_full:
+        notifications["battery_full"].body = config.body_full
+
+    # If other battery settings are configured in config file, use those values
     for battery in batteries:
         if config.suspend:
             battery.suspend = config.suspend
