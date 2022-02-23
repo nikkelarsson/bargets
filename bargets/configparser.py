@@ -90,7 +90,10 @@ class BatteryConfigParser(Config, BatteryConfig):
         Config.__init__(self)
         BatteryConfig.__init__(self)
         Config._load(self)
+        self._set_settings()
 
+    def _set_settings(self) -> None:
+        """Initialize settings."""
         opts: list = []
         if self._config:
             opts = [s for k, s in self._config.items() if k == "battery"]
@@ -224,7 +227,10 @@ class CPUConfigParser(Config, CPUConfig):
         Config.__init__(self)
         CPUConfig.__init__(self)
         Config._load(self)
+        self._set_settings()
 
+    def _set_settings(self) -> None:
+        """Initialize settings."""
         opts: list = []
         if self._config:
             opts = [s for k, s in self._config.items() if k == "cpu"]
