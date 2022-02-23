@@ -5,8 +5,10 @@ as Polybar, i3bar etc.
 Where does the name, "bargets", come from? [Bar] Wid[gets].
 
 # Installation
+**bargets** requires **python3.10**, so the way to install is:
+
 ``` bash
-pip install bargets
+python3.10 -m pip install bargets
 ```
 
 # Usage
