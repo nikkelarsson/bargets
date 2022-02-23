@@ -270,8 +270,8 @@ class FullBatteryNotification(Notification):
         """Initialize notification body."""
 
         body: dict[str, str] = {
-            "fi_FI.UTF-8": "Akku on ladattu täyteen",
-            "en_US.UTF-8": "Battery fully charged",
+            "fi_FI.UTF-8": "Akku on ladattu täyteen!",
+            "en_US.UTF-8": "Battery fully charged!",
         }
 
         return body.get(self._language, body.get("en_US.UTF-8"))
@@ -355,8 +355,8 @@ class LowBatteryNotification(Notification):
         """Initialize notification body."""
 
         body: dict[str, str] = {
-            "fi_FI.UTF-8": "Akun taso matala",
-            "en_US.UTF-8": "Battery charge low",
+            "fi_FI.UTF-8": "Akun taso matala!",
+            "en_US.UTF-8": "Battery charge low!",
         }
 
         return body.get(self._language, body.get("en_US.UTF-8"))
