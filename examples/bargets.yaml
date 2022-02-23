@@ -21,5 +21,9 @@
     # indicator: "#"  # default: "%"
     # symbol.discharging: "«"  # default: "↓"
     # symbol.charging: "»"  # default: "↑"
-    # notification.low: "low battery!"  # default: "WARNING: LOW BATTERY CHARGE"
-    # notification.full: "full battery!"  # default: "Battery fully charged"
+
+    # Notification content
+    # subject.low: "Battery alert"  # default: "Battery"
+    # subject.full: "Battery notification"  # default: "Battery"
+    # body.low: "Battery is very low!"  # default: "Battery charge low"
+    # body.full: "Battery is now fully charged!"  # default: "Battery fully charged"
