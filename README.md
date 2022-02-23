@@ -48,3 +48,4 @@ You can copy example configuration from
 # Todo
 - [ ] Add tests
 - [ ] Add command line options
+- [ ] Add screenshot(s)
