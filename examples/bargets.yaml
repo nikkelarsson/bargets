@@ -4,7 +4,7 @@
 # cpu:
     # unit: fahrenheit  # default: celcius
     # prefix: "cpu: "   # default: ""
-    # suffix: " haha"   # default: ""
+    # suffix: " ^_^"   # default: ""
     # indicator: "°"    # default: "°C"
 
 
