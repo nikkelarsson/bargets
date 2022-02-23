@@ -30,7 +30,8 @@ interval = 5
 # Configuration: bargets.yaml
 If you wish, you can configure each widget how you like in **bargets.yaml**.
 First, you need to create a file called **bargets.yaml** to ~/.config/bargets.
-You can copy example configuration from [here](examples).
+You can copy example configuration from
+[here](https://github.com/nikkelarsson/bargets/blob/main/examples/bargets.yaml).
 
 # Widgets
 | Widget       | Command          |
