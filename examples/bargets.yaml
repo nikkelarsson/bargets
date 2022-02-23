@@ -9,11 +9,16 @@
 
 
 # battery:
+    # Suspend system when threshold.critical is met?
     # suspend: false  # default: true
-    # indicator: "#"  # default: "%"
+
+    # Thresholds
     # threshold.full: 95  # default: 99
     # threshold.low: 10  # default: 5
     # threshold.critical: 5  # default: 3
+
+    # Widget looks
+    # indicator: "#"  # default: "%"
     # symbol.discharging: "«"  # default: "↓"
     # symbol.charging: "»"  # default: "↑"
     # notification.low: "low battery!"  # default: "WARNING: LOW BATTERY CHARGE"
