@@ -50,7 +50,7 @@ You can copy example configuration from
 # Requirements
 | Requirement  | Note          |
 | -----------: | :------------ |
-| Python       | 3.10 or higher |
+| Python       | 3.10          |
 | OS           | MacOS, Linux  |
 
 # Todo
