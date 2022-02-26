@@ -44,7 +44,7 @@ You can copy example configuration from
 The following is a list of options you can configure in **bargets.yaml**.
 
 | Widget       | Option              | Accepted values     | Description                                   |
-| :----------: | :-----------------: | :-----------------: | :-------------------------------------------: |
+| -----------: | :-----------------: | :-----------------: | :-------------------------------------------- |
 | CPU          | unit                | celcius, fahrenheit | What unit to display temperature in.          |
 | CPU          | prefix              | any string value    | Display something before temperature reading. |
 | CPU          | suffix              | any string value    | Display something after temperature reading.  |
