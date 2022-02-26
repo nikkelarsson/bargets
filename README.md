@@ -57,3 +57,4 @@ You can copy example configuration from
 - [ ] Add tests
 - [ ] Add command line options
 - [ ] Add screenshot(s)
+- [ ] Add config file examples
