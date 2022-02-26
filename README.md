@@ -1,3 +1,11 @@
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.10-informational?style=for-the-badge)
+![Release](https://img.shields.io/badge/Release-0.1.0rc2-blueviolet?style=for-the-badge)
+![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
+
+</div>
+
 # About
 Bargets is a small set of tiny but nice little widgets to be used in a statusbar, such
 as Polybar, i3bar etc.
