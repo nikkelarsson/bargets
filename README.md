@@ -25,8 +25,8 @@ statusbar's config. Make sure to check where **pip** installed the widgets, by
 typing `which <widget name>` against any of the widgets, so that you know what
 path to use.
 
-### Example: polybar
-The following is a snippet of how you could use the battery widget with **polybar**:
+The following is a snippet of how you could use, for example, the battery widget
+with **polybar**. The process is more or less the same with other bars, as well.
 
 ``` lua
 [battery]
@@ -35,11 +35,12 @@ exec = $HOME/.local/bin/bargets-battery
 interval = 5
 ```
 
-# Configuration: bargets.yaml
-If you wish, you can configure each widget how you like in **bargets.yaml**.
-First, you need to create a file called **bargets.yaml** to ~/.config/bargets.
-You can copy example configuration from
-[here](https://github.com/nikkelarsson/bargets/blob/main/examples/bargets.yaml).
+# Configuration
+Yes, **bargets** widgets are totally configurable. Yay!
+
+You simply need to create a file called `bargets.yaml` to `$HOME/.config/bargets` (or
+`$XDG_CONFIG_HOME/bargets`, if you have that defined). You can get an example
+config from [here](https://github.com/nikkelarsson/bargets/blob/main/examples/bargets.yaml).
 
 The following is a list of options you can configure in **bargets.yaml**.
 
