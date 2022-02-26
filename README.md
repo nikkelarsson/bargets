@@ -62,10 +62,10 @@ The following is a list of options you can configure in **bargets.yaml**.
 | Battery      | body.full           | any string value    | Notification body on full charge.            |
 
 # Widgets
-| Widget       | Command          | Description                                                      |
-| -----------: | :--------------- | :--------------------------------------------------------------- |
-| CPU          | bargets-cpu      | Display CPU's current temperature                                |
-| Battery      | bargets-battery  | Display battery charge (%) & state (i.e. charging / discharging) |
+| Widget       | Command          | Description                                                   |
+| -----------: | :--------------- | :------------------------------------------------------------ |
+| CPU          | bargets-cpu      | Display CPU's current temperature.                            |
+| Battery      | bargets-battery  | Display battery charge & state (i.e. charging / discharging). |
 
 # Requirements
 | Requirement  | Note          |
