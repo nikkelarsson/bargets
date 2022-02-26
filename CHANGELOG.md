@@ -1,5 +1,7 @@
 # Changelog
 
+## [0.1.0rc3 – Unreleased](https://github.com/nikkelarsson/bargets/releases/tag/v0.1.0rc3) -- Unknown
+
 ## [0.1.0rc2](https://github.com/nikkelarsson/bargets/releases/tag/v0.1.0rc2) -- February 23 2022
 ### Changed
 - Show notification message in two parts: subject and body
