@@ -89,7 +89,11 @@ class Battery:
                     data: list = line.split()
                     if "not charging" in line:
                         self._state = " ".join(data[2:4]).replace(",", "")
-                    elif "discharging" in line or "charging" in line:
+                    elif "discharging" in line:
+                        self._state = data[2].replace(",", "")
+                    elif "charging" in line:
+                        self._state = data[2].replace(",", "")
+                    elif "full" in line:
                         self._state = data[2].replace(",", "")
                     del data, line
                     break
@@ -103,7 +107,11 @@ class Battery:
                     data: list = line.split()
                     if "not charging" in line:
                         self._charge = data[4].replace(",", "").replace("%", "")
-                    elif "discharging" in line or "charging" in line:
+                    elif "discharging" in line:
+                        self._charge = data[3].replace(",", "").replace("%", "")
+                    elif "charging" in line:
+                        self._charge = data[3].replace(",", "").replace("%", "")
+                    elif "full" in line:
                         self._charge = data[3].replace(",", "").replace("%", "")
                     del data, line
                     break
