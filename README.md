@@ -41,6 +41,26 @@ First, you need to create a file called **bargets.yaml** to ~/.config/bargets.
 You can copy example configuration from
 [here](https://github.com/nikkelarsson/bargets/blob/main/examples/bargets.yaml).
 
+The following is a list of options you can configure in **bargets.yaml**.
+
+| Widget       | Option              | Accepted values     | Description                                   |
+| :----------: | :-----------------: | :-----------------: | :-------------------------------------------: |
+| CPU          | unit                | celcius, fahrenheit | What unit to display temperature in.          |
+| CPU          | prefix              | any string value    | Display something before temperature reading. |
+| CPU          | suffix              | any string value    | Display something after temperature reading.  |
+| CPU          | indicator           | any string value    | Text between temperature reading and suffix.  |
+| Battery      | suspend             | true, false         | Suspend computer when charge critically low.  |
+| Battery      | indicator           | any string value    | Text after battery charge info.               |
+| Battery      | threshold.full      | int >90, <=100      | Threshold when battery full.                  |
+| Battery      | threshold.low       | int >0              | Threshold when battery low.                   |
+| Battery      | threshold.critical  | int >0              | Threshold when battery critical.              |
+| Battery      | symbol.discharging  | any string value    | Prefix when battery discharging.              |
+| Battery      | symbol.charging     | any string value    | Prefix when battery charging.                 |
+| Battery      | subject.low         | any string value    | Notification subject on low charge.           |
+| Battery      | body.low            | any string value    | Notification body on low charge.              |
+| Battery      | subject.full        | any string value    | Notification subject on full charge.          |
+| Battery      | body.full           | any string value    | Notification body on full charge.             |
+
 # Widgets
 | Widget       | Command          | Description                                                      |
 | :----------: | :--------------: | :--------------------------------------------------------------: |
@@ -57,4 +77,4 @@ You can copy example configuration from
 - [ ] Add tests
 - [ ] Add command line options
 - [ ] Add screenshot(s)
-- [ ] Add config file examples
+- [x] Add config file examples
