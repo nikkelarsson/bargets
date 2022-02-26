@@ -1,7 +1,7 @@
 <div align="center">
 
 ![Python](https://img.shields.io/badge/Python-3.10-informational?style=for-the-badge)
-![Release](https://img.shields.io/badge/Release-0.1.0rc2-blueviolet?style=for-the-badge)
+[![Release](https://img.shields.io/badge/Release-0.1.0rc2-blueviolet?style=for-the-badge)](https://github.com/nikkelarsson/bargets/releases/tag/v0.1.0rc2)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
 </div>
