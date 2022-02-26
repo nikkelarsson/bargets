@@ -63,13 +63,13 @@ The following is a list of options you can configure in **bargets.yaml**.
 
 # Widgets
 | Widget       | Command          | Description                                                      |
-| :----------: | :--------------: | :--------------------------------------------------------------: |
+| -----------: | :--------------- | :--------------------------------------------------------------- |
 | CPU          | bargets-cpu      | Display CPU's current temperature                                |
 | Battery      | bargets-battery  | Display battery charge (%) & state (i.e. charging / discharging) |
 
 # Requirements
 | Requirement  | Note          |
-| :----------: | :-----------: |
+| -----------: | :------------ |
 | Python       | 3.10          |
 | OS           | MacOS, Linux  |
 
