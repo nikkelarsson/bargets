@@ -42,14 +42,14 @@ You can copy example configuration from
 [here](https://github.com/nikkelarsson/bargets/blob/main/examples/bargets.yaml).
 
 # Widgets
-| Widget       | Command          |
-| -----------: | :--------------- |
-| CPU          | bargets-cpu      |
-| Battery      | bargets-battery  |
+| Widget       | Command          | Description                                                      |
+| :----------: | :--------------: | :--------------------------------------------------------------: |
+| CPU          | bargets-cpu      | Display CPU's current temperature                                |
+| Battery      | bargets-battery  | Display battery charge (%) & state (i.e. charging / discharging) |
 
 # Requirements
 | Requirement  | Note          |
-| -----------: | :------------ |
+| :----------: | :-----------: |
 | Python       | 3.10          |
 | OS           | MacOS, Linux  |
 
